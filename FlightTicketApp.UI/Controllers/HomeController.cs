@@ -17,8 +17,13 @@ namespace FlightTicketApp.UI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(bool rateLimitError = false) 
         {
+            if (rateLimitError)
+            {
+                ViewBag.ErrorMessage = "Çok fazla arama yaptınız. Lütfen 10 saniye bekleyip tekrar deneyin.";
+            }
+
             var client = _httpClientFactory.CreateClient("FlightApi");
             List<AirportDto> airports = new();
 

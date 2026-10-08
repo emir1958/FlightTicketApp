@@ -10,12 +10,18 @@ builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("SearchLimiter", opt =>
     {
-        opt.Window = TimeSpan.FromSeconds(10); 
-        opt.PermitLimit = 3;                 
+        opt.Window = TimeSpan.FromSeconds(10);
+        opt.PermitLimit = 3;
         opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        opt.QueueLimit = 0;                   
+        opt.QueueLimit = 0;
     });
-    options.RejectionStatusCode = 429; 
+
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = 429;
+        context.HttpContext.Response.Redirect("/?rateLimitError=true");
+        await Task.CompletedTask;
+    };
 });
 
 var apiBaseUrl = builder.Configuration["ApiSettings:FlightApiBaseUrl"];
