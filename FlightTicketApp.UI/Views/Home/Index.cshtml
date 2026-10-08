@@ -1,0 +1,149 @@
+﻿@using FlightTicketApp.Shared.DTOs
+@model FlightTicketApp.UI.Models.FlightSearchViewModel
+@{
+    ViewData["Title"] = "Uçak Bileti Arama";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<div class="container py-4">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-primary"><i class="bi bi-airplane-engines me-2"></i>Uçak Bileti Satış Uygulaması</h2>
+    </div>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger shadow-sm fw-bold">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @ViewBag.ErrorMessage
+        </div>
+    }
+
+   
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger shadow-sm">
+            @Html.ValidationSummary(false, "", new { @class = "text-danger fw-semibold mb-0" })
+        </div>
+    }
+
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-body p-4">
+            <form asp-controller="Home" asp-action="Index" method="post" class="row g-3 align-items-end">
+
+                <div class="col-12 mb-2">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" asp-for="TripType" value="round" id="roundTrip">
+                        <label class="form-check-label fw-semibold" for="roundTrip">Gidiş - Dönüş</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" asp-for="TripType" value="oneWay" id="oneWay">
+                        <label class="form-check-label fw-semibold" for="oneWay">Tek Yön</label>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold text-secondary">Nereden</label>
+                    <select asp-for="Origin" class="form-select form-select-lg" required>
+                        <option value="">Seçiniz</option>
+                        @foreach (var airport in Model.Airports)
+                        {
+                            <option value="@airport.Code">@airport.City (@airport.Code) - @airport.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold text-secondary">Nereye</label>
+                    <select asp-for="Destination" class="form-select form-select-lg" required>
+                        <option value="">Seçiniz</option>
+                        @foreach (var airport in Model.Airports)
+                        {
+                            <option value="@airport.Code">@airport.City (@airport.Code) - @airport.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold text-secondary">Gidiş</label>
+                    <input type="date" asp-for="DepartureDate" class="form-control form-select-lg" required min="@DateTime.Today.ToString("yyyy-MM-dd")">
+                </div>
+
+                <div class="col-md-2" id="returnDateContainer">
+                    <label class="form-label fw-semibold text-secondary">Dönüş</label>
+                    <input type="date" asp-for="ReturnDate" class="form-control form-select-lg" min="@DateTime.Today.ToString("yyyy-MM-dd")">
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">
+                        <i class="bi bi-search me-1"></i> Ara
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (Model.SearchResults != null && !Model.SearchResults.HasError)
+    {
+        <div class="row g-4">
+            <div class="@(Model.TripType == "oneWay" ? "col-12" : "col-lg-6")">
+                <h5 class="fw-bold mb-3 text-secondary border-bottom pb-2">Gidiş Uçuşları</h5>
+
+                @if (Model.SearchResults.OutboundFlights?.Any() == true)
+                {
+                    @foreach (var flight in Model.SearchResults.OutboundFlights)
+                    {
+                        <partial name="_FlightCardPartial" model="@(new Tuple<FlightDto, string>(flight, "Gidiş"))" />
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-warning">Uygun gidiş uçuşu bulunamadı.</div>
+                }
+            </div>
+
+            @if (Model.TripType == "round")
+            {
+                <div class="col-lg-6">
+                    <h5 class="fw-bold mb-3 text-secondary border-bottom pb-2">Dönüş Uçuşları</h5>
+
+                    @if (Model.SearchResults.InboundFlights?.Any() == true)
+                    {
+                        @foreach (var flight in Model.SearchResults.InboundFlights)
+                        {
+                            <partial name="_FlightCardPartial" model="@(new Tuple<FlightDto, string>(flight, "Dönüş"))" />
+                        }
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">Uygun dönüş uçuşu bulunamadı.</div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const oneWayRadio = document.getElementById("oneWay");
+            const roundTripRadio = document.getElementById("roundTrip");
+            const returnContainer = document.getElementById("returnDateContainer");
+            const returnInput = document.getElementById("ReturnDate");
+
+            function toggleReturnDate() {
+                if (oneWayRadio.checked) {
+                    returnContainer.classList.add("d-none");
+                    returnInput.removeAttribute("required");
+                } else {
+                    returnContainer.classList.remove("d-none");
+                    returnInput.setAttribute("required", "required");
+                }
+            }
+
+            oneWayRadio.addEventListener("change", toggleReturnDate);
+            roundTripRadio.addEventListener("change", toggleReturnDate);
+            toggleReturnDate(); 
+        });
+    </script>
+}

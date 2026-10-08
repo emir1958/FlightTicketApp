@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="FlightProvider/FlightProvider.csproj" />
+  <Project Path="FlightTicketApp.API/FlightTicketApp.API.csproj" />
+  <Project Path="FlightTicketApp.Shared/FlightTicketApp.Shared.csproj" Id="71e64c73-35f0-440b-ac37-b2266fb4a87c" />
+  <Project Path="FlightTicketApp.Tests/FlightTicketApp.Tests.csproj" />
+  <Project Path="FlightTicketApp.UI/FlightTicketApp.UI.csproj" />
+</Solution>
